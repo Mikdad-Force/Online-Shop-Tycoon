@@ -27,6 +27,10 @@ object GameContext {
         private set
     lateinit var events: LiveEventSystem
         private set
+    lateinit var upgrades: UpgradeSystem
+        private set
+    lateinit var employees: EmployeeSystem
+        private set
     lateinit var world: World
         private set
     lateinit var player: Player
@@ -47,9 +51,13 @@ object GameContext {
         packing = PackingSystem(state, bus)
         courier = CourierSystem(bus)
         time = DayNightSystem(state, bus)
-        save = SaveSystem(state, orders, bus)
+        upgrades = UpgradeSystem(state, bus)
+        employees = EmployeeSystem(state, inventory, packing, upgrades, bus)
+        save = SaveSystem(state, orders, upgrades, employees, bus)
         audio = AudioSystem(bus)
         events = LiveEventSystem(state, orders, bus)
         initialized = true
     }
+
+    fun isReady(): Boolean = initialized
 }

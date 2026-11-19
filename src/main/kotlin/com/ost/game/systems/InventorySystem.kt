@@ -13,6 +13,10 @@ class InventorySystem(private val state: GameState, private val bus: EventBus) {
     fun buy(productId: String, qty: Int): Boolean {
         val p = Catalog.find(productId) ?: return false
         if (qty <= 0) return false
+        if (stock(productId) + qty > state.storageCapacity) {
+            bus.emit(Ev.NOTIFICATION, "Kapasitas gudang penuh! Beli upgrade Rak/Gudang di PC")
+            return false
+        }
         val cost = p.buyPrice * qty
         if (!state.spend(cost)) {
             bus.emit(Ev.NOTIFICATION, "Uang tidak cukup untuk beli $qty ${p.name}")

@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.math.Vector3
 import com.ost.game.core.GameConfig
 import com.ost.game.core.Settings
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -18,6 +19,9 @@ class Player(val camera: PerspectiveCamera) {
         private set
     var sprinting = false
         private set
+    var thirdPerson = false
+
+    fun facingDegrees(): Float = Math.toDegrees(atan2(forward.x.toDouble(), forward.z.toDouble())).toFloat()
 
     private val forward = Vector3()
     private val right = Vector3()
@@ -64,12 +68,21 @@ class Player(val camera: PerspectiveCamera) {
             position.y = if (crouching) GameConfig.CROUCH_HEIGHT else GameConfig.EYE_HEIGHT
         }
 
-        camera.position.set(position)
-        camera.lookAt(
-            position.x + forward.x * cos(pitch),
-            position.y + sin(pitch),
-            position.z + forward.z * cos(pitch)
-        )
+        if (thirdPerson) {
+            camera.position.set(
+                position.x - forward.x * 3.6f,
+                position.y + 1.0f,
+                position.z - forward.z * 3.6f
+            )
+            camera.lookAt(position.x + forward.x * 2f, position.y + .7f, position.z + forward.z * 2f)
+        } else {
+            camera.position.set(position)
+            camera.lookAt(
+                position.x + forward.x * cos(pitch),
+                position.y + sin(pitch),
+                position.z + forward.z * cos(pitch)
+            )
+        }
         camera.update()
     }
 }

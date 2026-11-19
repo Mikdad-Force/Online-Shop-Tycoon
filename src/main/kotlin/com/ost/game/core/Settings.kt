@@ -9,6 +9,7 @@ object Settings {
     var musicVolume = 0.5f
     var haptics = true
     var sensitivity = 1f
+    var quality = 1 // 0 rendah, 1 sedang, 2 tinggi
 
     fun load() {
         val f = Gdx.files.local("settings.txt")
@@ -23,6 +24,7 @@ object Settings {
                     "musicVolume" -> musicVolume = kv[1].toFloat().coerceIn(0f, 1f)
                     "haptics" -> haptics = kv[1].toBoolean()
                     "sensitivity" -> sensitivity = kv[1].toFloat().coerceIn(.3f, 2.5f)
+                    "quality" -> quality = kv[1].toInt().coerceIn(0, 2)
                 }
             }
         } catch (e: Exception) { e.printStackTrace() }
@@ -31,7 +33,7 @@ object Settings {
     fun save() {
         val data = listOf(
             "musicOn=$musicOn", "sfxVolume=$sfxVolume", "musicVolume=$musicVolume",
-            "haptics=$haptics", "sensitivity=$sensitivity"
+            "haptics=$haptics", "sensitivity=$sensitivity", "quality=$quality"
         ).joinToString("\n")
         Gdx.files.local("settings.txt").writeString(data, false)
     }

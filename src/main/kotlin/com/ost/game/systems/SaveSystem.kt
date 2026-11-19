@@ -9,6 +9,8 @@ import com.ost.game.data.GameState
 class SaveSystem(
     private val state: GameState,
     private val orders: OrderSystem,
+    private val upgrades: UpgradeSystem,
+    private val employees: EmployeeSystem,
     private val bus: EventBus
 ) {
     private val version = 1
@@ -25,8 +27,10 @@ class SaveSystem(
         val sb = StringBuilder()
         sb.append("V").append(version).append("\n")
         sb.append(listOf(s.cash, s.reputation, s.day, s.timeOfDay, s.ordersDone,
-            s.productsSold, s.loan, s.stage).joinToString("|")).append("\n")
+            s.productsSold, s.loan, s.stage, s.storageCapacity).joinToString("|")).append("\n")
         sb.append("INV:").append(s.inventory.entries.joinToString(",") { "${it.key}=${it.value}" }).append("\n")
+        sb.append("UPG:").append(upgrades.serialize()).append("\n")
+        sb.append("EMP:").append(employees.serialize()).append("\n")
         orders.serialize().forEach { sb.append("ORD:").append(it.joinToString("|")).append("\n") }
 
         f.writeString(sb.toString(), false)
@@ -43,7 +47,8 @@ class SaveSystem(
             val p = lines[1].split("|")
             state.apply(com.ost.game.data.GameSnapshot(
                 p[0].toLong(), p[1].toInt(), p[2].toInt(), p[3].toFloat(),
-                mutableMapOf(), p[4].toInt(), p[5].toInt(), p[6].toLong(), p[7].toInt()
+                mutableMapOf(), p[4].toInt(), p[5].toInt(), p[6].toLong(), p[7].toInt(),
+                if (p.size > 8) p[8].toInt() else 50
             ))
             lines.firstOrNull { it.startsWith("INV:") }?.let { line ->
                 state.inventory.clear()
@@ -52,6 +57,8 @@ class SaveSystem(
                     if (kv.size == 2) state.inventory[kv[0]] = kv[1].toInt()
                 }
             }
+            lines.firstOrNull { it.startsWith("UPG:") }?.let { upgrades.deserialize(it.removePrefix("UPG:")) }
+            lines.firstOrNull { it.startsWith("EMP:") }?.let { employees.deserialize(it.removePrefix("EMP:")) }
             orders.deserialize(lines.filter { it.startsWith("ORD:") }.map {
                 it.removePrefix("ORD:").split("|").toTypedArray()
             })

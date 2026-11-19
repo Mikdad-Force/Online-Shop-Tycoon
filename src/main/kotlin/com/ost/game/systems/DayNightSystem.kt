@@ -21,7 +21,7 @@ class DayNightSystem(private val state: GameState, private val bus: EventBus) {
         if (state.timeOfDay >= 1f) {
             state.timeOfDay -= 1f
             state.day++
-            val cost = GameConfig.DAILY_RENT + GameConfig.DAILY_SALARY
+            val cost = GameConfig.DAILY_RENT + GameConfig.DAILY_SALARY + state.employeeSalary
             state.spend(cost)
             bus.emit(Ev.DAY_CHANGED, state.day)
             bus.emit(Ev.NOTIFICATION, "Hari ${state.day} — biaya operasional -Rp $cost")

@@ -22,8 +22,8 @@ class ComputerUI(private val skin: Skin) {
         window.setSize(640f, 600f)
         window.isMovable = true
         val tabs = Table()
-        listOf("ORDER", "INVENTORY", "FINANCE", "STAFF", "MARKETING").forEach { t ->
-            tabs.add(object : TextButton(t, skin) { override fun getPrefWidth(): Float = 118f }.apply {
+        listOf("ORDER", "INVENTORY", "FINANCE", "STAFF", "UPGRADE", "MARKETING").forEach { t ->
+            tabs.add(object : TextButton(t, skin) { override fun getPrefWidth(): Float = 100f }.apply {
                 addListener(object : ClickListener() {
                     override fun clicked(event: InputEvent?, x: Float, y: Float) { tab = t; refresh() }
                 })
@@ -65,7 +65,7 @@ class ComputerUI(private val skin: Skin) {
                 }
             }
             "INVENTORY" -> {
-                content.add(Label("Stok gudang (${GameContext.inventory.totalItems()} item)", skin)).left().pad(8f).row()
+                content.add(Label("Stok gudang ${GameContext.inventory.totalItems()}/${s.storageCapacity} item", skin)).left().pad(8f).row()
                 Catalog.products.forEach { p ->
                     val row = Table()
                     row.add(Label("${p.name} [${p.sku}]", skin)).width(230f).padLeft(8f)
@@ -80,12 +80,49 @@ class ComputerUI(private val skin: Skin) {
                 content.add(Label("Pesanan selesai: ${s.ordersDone}", skin)).pad(4f).row()
                 content.add(Label("Produk terjual: ${s.productsSold}", skin)).pad(4f).row()
                 content.add(Label("Pinjaman: Rp ${String.format("%,d", s.loan)}", skin)).pad(4f).row()
-                content.add(Label("Biaya harian: Rp ${String.format("%,d", GameConfig.DAILY_RENT + GameConfig.DAILY_SALARY)}", skin)).pad(4f).row()
+                val daily = GameConfig.DAILY_RENT + GameConfig.DAILY_SALARY + s.employeeSalary
+                val tax = (s.cash * 0.02f).toLong()
+                content.add(Label("Gaji karyawan/hari: Rp ${String.format("%,d", s.employeeSalary)}", skin)).pad(4f).row()
+                content.add(Label("Total biaya harian: Rp ${String.format("%,d", daily)}", skin)).pad(4f).row()
+                content.add(Label("Estimasi pajak (2% kas): Rp ${String.format("%,d", tax)}", skin)).pad(4f).row()
+                content.add(Label("Stage: ${s.stage} — ${com.ost.game.data.Catalog.stageName(s.stage)}", skin)).pad(4f).row()
             }
             "STAFF" -> {
-                content.add(Label("Karyawan aktif", skin)).left().pad(8f).row()
-                listOf("Warehouse Staff", "Picker", "Packer", "Manager", "Customer Service").forEach {
-                    content.add(Label("• $it — shift pagi (produktivitas 80%)", skin)).left().padLeft(16f).row()
+                content.add(Label("Karyawan aktif: ${GameContext.employees.employees.size}", skin)).left().pad(8f).row()
+                com.ost.game.systems.Role.entries.forEach { role ->
+                    val hired = GameContext.employees.employees.any { it.role == role }
+                    val row = Table()
+                    row.add(Label("${role.label} — Rp ${String.format("%,d", role.hireCost)}", skin)).width(280f).padLeft(8f)
+                    row.add(object : TextButton(if (hired) "BERHENTIKAN" else "REKRUT", skin) {
+                        override fun getPrefWidth(): Float = 150f
+                        override fun getPrefHeight(): Float = 44f
+                    }.apply { addListener(object : ClickListener() {
+                        override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                            if (hired) GameContext.employees.fire(role) else GameContext.employees.hire(role)
+                            refresh()
+                        }
+                    }) })
+                    content.add(row).expandX().fillX().row()
+                }
+                content.add(Label("Picker otomatis menyiapkan barang di meja packing.", skin)).left().padLeft(8f).padTop(10f).row()
+                content.add(Label("Packer otomatis memajukan tahap packing bila ada paket.", skin)).left().padLeft(8f).row()
+            }
+            "UPGRADE" -> {
+                content.add(Label("Upgrade fasilitas (kas: Rp ${String.format("%,d", s.cash)})", skin)).left().pad(8f).row()
+                com.ost.game.systems.Upgrade.entries.forEach { u ->
+                    val owned = GameContext.upgrades.has(u.id)
+                    val row = Table()
+                    row.add(Label("${u.title}\n${u.desc}", skin)).width(300f).padLeft(8f)
+                    row.add(Label(if (owned) "DIMILIKI" else "Rp ${String.format("%,d", u.cost)}", skin)).width(130f)
+                    if (!owned) row.add(object : TextButton("BELI", skin) {
+                        override fun getPrefWidth(): Float = 90f
+                        override fun getPrefHeight(): Float = 44f
+                    }.apply { addListener(object : ClickListener() {
+                        override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                            GameContext.upgrades.buy(u); refresh()
+                        }
+                    }) })
+                    content.add(row).expandX().fillX().row()
                 }
             }
             "MARKETING" -> {

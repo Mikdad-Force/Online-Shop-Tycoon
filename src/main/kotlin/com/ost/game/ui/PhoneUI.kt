@@ -106,6 +106,9 @@ class PhoneUI(private val skin: Skin) {
                 content.add(toggleBtn("HAPTIC") { st.haptics = !st.haptics }).pad(2f)
                 content.add(adjustBtn("SENS -") { st.sensitivity = (st.sensitivity - .1f).coerceIn(.3f, 2.5f) }).pad(2f)
                 content.add(adjustBtn("SENS +") { st.sensitivity = (st.sensitivity + .1f).coerceIn(.3f, 2.5f) }).pad(2f).row()
+                content.add(Label("GRAFIS: ${listOf("RENDAH", "SEDANG", "TINGGI")[st.quality]}", skin)).pad(6f).row()
+                content.add(adjustBtn("GRAFIS -") { st.quality = (st.quality - 1).coerceIn(0, 2) }).pad(2f)
+                content.add(adjustBtn("GRAFIS +") { st.quality = (st.quality + 1).coerceIn(0, 2) }).pad(2f).row()
                 content.add(object : TextButton("SIMPAN PENGATURAN", skin) {
                     override fun getPrefWidth(): Float = 320f
                 }.apply { addListener(object : ClickListener() {

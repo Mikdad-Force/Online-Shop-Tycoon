@@ -29,7 +29,8 @@ data class GameSnapshot(
     var ordersDone: Int = 0,
     var productsSold: Int = 0,
     var loan: Long = 0,
-    var stage: Int = 1
+    var stage: Int = 1,
+    var storageCapacity: Int = 50
 )
 
 object Catalog {

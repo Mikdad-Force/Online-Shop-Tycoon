@@ -23,6 +23,8 @@ class World {
     private val productModels = HashMap<String, Model>()
     private val shelfDisplays = mutableListOf<Pair<String, ModelInstance>>()
     private val hiddenProducts = mutableSetOf<String>()
+    private val expansion = mutableListOf<ModelInstance>()
+    private var heldYaw = 0f
 
     val environment = Environment().apply {
         set(ColorAttribute.createAmbientLight(0.55f, 0.55f, 0.58f, 1f))
@@ -87,6 +89,9 @@ class World {
         }
         rack(6f, -3f); rack(6f, -6.5f); rack(6f, 2f)
 
+        // Area gudang tambahan (muncul setelah upgrade warehouse2)
+        listOf(-6f, -2f, 5f).forEach { z -> expansionRack(-8.5f, z) }
+
         // Etalase depan
         listOf(.6f, 1.2f, 1.8f).forEach { y -> addBox(3f, .1f, .8f, 0xA1887F, -4f, y, 3f) }
 
@@ -108,6 +113,19 @@ class World {
 
         buildShelfDisplays()
         buildInteractables()
+    }
+
+    private fun expansionRack(x: Float, z: Float) {
+        listOf(-1.3f, 1.3f).forEach { dx -> listOf(-.55f, .55f).forEach { dz ->
+            val i = ModelInstance(makeModel(.12f, 2.6f, .12f, 0x607D8B))
+            i.transform.setToTranslation(x + dx, 1.3f, z + dz)
+            expansion.add(i)
+        } }
+        listOf(.5f, 1.3f, 2.1f).forEach { y ->
+            val i = ModelInstance(makeModel(2.8f, .1f, 1.3f, 0x90A4AE))
+            i.transform.setToTranslation(x, y, z)
+            expansion.add(i)
+        }
     }
 
     private fun buildShelfDisplays() {
@@ -165,8 +183,11 @@ class World {
 
     fun setHeld(id: String?) {
         heldId = id
+        heldYaw = 0f
         held = if (id == null) null else ModelInstance(productModel(id))
     }
+
+    fun rotateHeld() { heldYaw = (heldYaw + 45f) % 360f }
 
     fun getHeld(): String? = heldId
 
@@ -183,6 +204,7 @@ class World {
                 camera.position.y + f.y * 1.1f - .35f,
                 camera.position.z + f.z * 1.1f
             )
+            inst.transform.rotate(Vector3.Y, heldYaw)
         }
 
         val c = GameContext.courier
@@ -198,6 +220,7 @@ class World {
 
     fun render(batch: ModelBatch) {
         batch.render(statics)
+        if (GameContext.isReady() && GameContext.upgrades.has("warehouse2")) batch.render(expansion)
         shelfDisplays.forEach { (id, inst) -> if (id !in hiddenProducts) batch.render(inst) }
         held?.let { batch.render(it) }
         if (GameContext.courier.vanActive) batch.render(van)

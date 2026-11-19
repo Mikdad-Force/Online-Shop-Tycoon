@@ -8,7 +8,7 @@ import kotlin.random.Random
 /** Efek hujan 3D sederhana (garis jatuh) mengikuti cuaca hari ini. */
 class WeatherFX {
     private data class Drop(var x: Float, var y: Float, var z: Float, var speed: Float)
-    private val drops = List(160) {
+    private val drops = List(when (com.ost.game.core.Settings.quality) { 0 -> 60; 1 -> 160; else -> 300 }) {
         Drop(Random.nextFloat() * 24 - 12, Random.nextFloat() * 12,
             Random.nextFloat() * 24 - 12, 8f + Random.nextFloat() * 6f)
     }

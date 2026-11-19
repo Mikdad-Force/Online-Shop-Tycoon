@@ -20,7 +20,8 @@ class HUD(
     private val onAction: () -> Unit,
     private val onPhone: () -> Unit,
     private val onComputer: () -> Unit,
-    private val onSave: () -> Unit
+    private val onSave: () -> Unit,
+    private val onView: () -> Unit
 ) {
     private val cashLabel = Label("", skin, "default").apply { setFontScale(1.1f) }
     private val timeLabel = Label("", skin, "default")
@@ -29,6 +30,7 @@ class HUD(
     private val orderLabel = Label("", skin, "default").apply { setAlignment(Align.topLeft) }
     private val promptLabel = Label("", skin, "default").apply { setAlignment(Align.center) }
     private val eventLabel = Label("", skin, "default").apply { setAlignment(Align.center); setFontScale(1.15f) }
+    private val fpsLabel = Label("", skin, "default")
     private val toastLabel = Label("", skin, "default").apply { setAlignment(Align.center); wrap = true }
     val touchpad = Touchpad(12f, skin)
 
@@ -39,7 +41,8 @@ class HUD(
         top.add(stageLabel).padLeft(14f).padRight(24f)
         top.add(cashLabel).padRight(24f)
         top.add(timeLabel).padRight(24f)
-        top.add(repLabel)
+        top.add(repLabel).padRight(24f)
+        top.add(fpsLabel)
         top.row()
 
         val orders = Table().apply { background = UIStyles.colorDrawable(0x99102834.toInt()) }
@@ -50,6 +53,7 @@ class HUD(
         val phoneBtn = btn("HP", onPhone)
         val pcBtn = btn("PC", onComputer)
         val saveBtn = btn("SAVE", onSave)
+        val viewBtn = btn("VIEW", onView)
         val actionBtn = btn("INTERAKSI", onAction, large = true)
 
         val bottom = Table()
@@ -58,6 +62,7 @@ class HUD(
         bottom.add(phoneBtn).pad(6f)
         bottom.add(pcBtn).pad(6f)
         bottom.add(saveBtn).pad(6f)
+        bottom.add(viewBtn).pad(6f)
         bottom.add(actionBtn).pad(12f)
 
         val center = Table()
@@ -122,6 +127,7 @@ class HUD(
         val s = GameContext.state
         timeLabel.setText("Hari ${s.day} • ${GameContext.time.clockText()} • ${GameContext.time.phaseName()}")
         stageLabel.setText("${Catalog.stageName(s.stage)}")
+        fpsLabel.setText("${Gdx.graphics.framesPerSecond} FPS")
         val sb = StringBuilder()
         s.orders.take(5).forEachIndexed { i, o ->
             val p = Catalog.find(o.productId)

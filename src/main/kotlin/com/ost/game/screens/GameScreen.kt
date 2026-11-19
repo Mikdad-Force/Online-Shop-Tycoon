@@ -36,9 +36,14 @@ class GameScreen : ScreenAdapter() {
     private val batch = ModelBatch()
     private val world = World()
     private val weather = com.ost.game.world.WeatherFX()
+    private val warehouseFX = com.ost.game.world.WarehouseFX()
     private val player = Player(camera)
+    private val avatar = com.ost.game.world.ChibiCharacter(0x26A69A)
+    private val visitor = com.ost.game.world.VisitorNPC()
+    private var visitorTimer = 45f
     private var stepTimer = 0f
     private var moving = false
+    private var celebrateTimer = 0f
 
     private val skin: Skin = UIStyles.createSkin()
     private val stage = Stage(ScreenViewport())
@@ -64,10 +69,15 @@ class GameScreen : ScreenAdapter() {
         GameContext.audio.load()
         GameContext.audio.startMusic()
         wireInteractables()
+        GameContext.bus.on(Ev.ORDER_DONE) { celebrateTimer = 2.5f }
 
         hud = HUD(stage, skin, ::performInteract, { phone.toggle() }, { computer.toggle() }, {
             GameContext.save.save("manual")
             GameContext.bus.emit(Ev.NOTIFICATION, "Game tersimpan (slot manual)")
+        }, {
+            player.thirdPerson = !player.thirdPerson
+            avatar.visible = player.thirdPerson
+            GameContext.bus.emit(Ev.NOTIFICATION, if (player.thirdPerson) "Kamera: orang ketiga" else "Kamera: orang pertama")
         })
         phone = PhoneUI(skin)
         computer = ComputerUI(skin)
@@ -94,6 +104,11 @@ class GameScreen : ScreenAdapter() {
                     Input.Keys.E -> if (!menuVisible) performInteract()
                     Input.Keys.P -> if (!menuVisible) phone.toggle()
                     Input.Keys.C -> if (!menuVisible) computer.toggle()
+                    Input.Keys.V -> if (!menuVisible) {
+                        player.thirdPerson = !player.thirdPerson
+                        avatar.visible = player.thirdPerson
+                    }
+                    Input.Keys.R -> if (!menuVisible) world.rotateHeld()
                     Input.Keys.ESCAPE -> { phone.hide(); computer.hide() }
                 }
                 return false
@@ -134,7 +149,11 @@ class GameScreen : ScreenAdapter() {
                     bus.emit(Ev.NOTIFICATION, "Produk diletakkan di meja packing")
                 }
                 pack.readyPackage != null -> bus.emit(Ev.NOTIFICATION, "Paket sudah jadi. Serahkan di area pickup.")
-                else -> bus.emit(Ev.NOTIFICATION, "Ambil produk dari rak dulu.")
+                else -> {
+                    val auto = GameContext.employees.takeAutoPicked()
+                    if (auto != null) pack.begin(auto)
+                    else bus.emit(Ev.NOTIFICATION, "Ambil produk dari rak dulu.")
+                }
             }
         }
 
@@ -154,7 +173,7 @@ class GameScreen : ScreenAdapter() {
                     bus.emit(Ev.NOTIFICATION, "Tidak ada pesanan untuk ${Catalog.find(id)?.name}. Barang kembali ke stok.")
                 } else {
                     ord.complete(order)
-                    GameContext.state.addCash(50_000)
+                    GameContext.state.addCash(if (GameContext.upgrades.has("van")) 60_000L else 50_000L)
                     courier.call()
                 }
             }
@@ -169,6 +188,8 @@ class GameScreen : ScreenAdapter() {
 
     private fun startNew() {
         GameContext.state.reset()
+        GameContext.upgrades.owned.clear()
+        GameContext.employees.deserialize("")
         GameContext.state.inventory["kopi"] = 12
         GameContext.state.inventory["buku"] = 8
         GameContext.state.inventory["teh"] = 6
@@ -242,6 +263,18 @@ class GameScreen : ScreenAdapter() {
         lookDx = 0f
         lookDy = 0f
 
+        avatar.position.set(player.position.x, 0f, player.position.z)
+        avatar.facing = player.facingDegrees()
+        avatar.anim = when {
+            celebrateTimer > 0f -> "CELEBRATE"
+            world.getHeld() != null -> "CARRY"
+            GameContext.packing.step >= 0 -> "PACK"
+            moving -> if (player.sprinting) "RUN" else "WALK"
+            else -> "IDLE"
+        }
+        avatar.update(dt, moving, player.sprinting)
+        if (celebrateTimer > 0f) celebrateTimer -= dt
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) jumpQueued = true
     }
 
@@ -257,6 +290,14 @@ class GameScreen : ScreenAdapter() {
             GameContext.events.update(dt)
             GameContext.orders.update(dt)
             GameContext.courier.update(dt)
+            GameContext.employees.update(dt)
+            warehouseFX.update(dt)
+            visitorTimer -= dt
+            if (visitorTimer <= 0f) {
+                visitor.spawn()
+                visitorTimer = 75f + kotlin.random.Random.nextFloat() * 60f
+            }
+            visitor.update(dt)
             GameContext.save.update(dt)
             interact()
             world.update(dt, camera, player)
@@ -276,6 +317,10 @@ class GameScreen : ScreenAdapter() {
 
         batch.begin(camera)
         world.render(batch)
+        warehouseFX.render(batch)
+        GameContext.employees.render(batch)
+        visitor.render(batch)
+        if (player.thirdPerson) avatar.render(batch)
         batch.end()
         weather.render(camera, GameContext.time.rain)
 
@@ -299,6 +344,9 @@ class GameScreen : ScreenAdapter() {
         Settings.save()
         GameContext.audio.dispose()
         weather.dispose()
+        warehouseFX.dispose()
+        avatar.dispose()
+        visitor.dispose()
         batch.dispose()
         world.dispose()
         stage.dispose()

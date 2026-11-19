@@ -48,6 +48,8 @@ beri tahu saja.
 | Jongkok | Ctrl |
 | Lompat | Spasi |
 | Interaksi | Tombol **INTERAKSI** / E |
+| Putar barang | R |
+| Ganti kamera (1st/3rd) | Tombol **VIEW** / V |
 | Smartphone | Tombol **HP** / P |
 | Komputer | Tombol **PC** / C |
 | Simpan manual | Tombol **SAVE** |
@@ -88,7 +90,19 @@ beri tahu saja.
   3x hadiah), komplain pelanggan, maintenance gudang, bulk deal supplier — muncul acak
   dengan banner di HUD.
 - **Settings (Phase 18):** tab SETTING di HP — music ON/OFF, volume music & SFX, haptic,
-  sensitivitas kamera; tersimpan di `settings.txt`.
+  sensitivitas kamera, kualitas grafis; tersimpan di `settings.txt`.
+- **Karakter chibi & animasi (Phase 11):** model chibi prosedural (kepala besar, badan kecil)
+  dengan animasi IDLE/WALK/RUN/CARRY/PACK/CELEBRATE/TIRED/TALK. Kamera bisa dibalik ke
+  orang ketiga (tombol **VIEW** / V).
+- **AI karyawan (Phase 8):** Picker mengambil barang & menyiapkannya di meja, Stocker
+  mengisi ulang stok, Packer memajukan tahap packing, Manager menaikkan reputasi.
+  Bisa direkrut/diberhentikan di PC → STAFF; gaji harian mengikuti jumlah karyawan.
+- **Upgrade & ekspansi (Phase 10):** 6 upgrade (rak, mesin packing, forklift, armada kurir,
+  auto restock, gudang baru). Gudang baru menambah kapasitas + rak visual baru.
+- **Animasi gudang (Phase 5):** conveyor berjalan, forklift mengangkut palet.
+- **NPC pengunjung (Phase 7):** datang, bicara di counter, memberi reputasi, lalu pergi.
+- **Finance (Phase 9):** laporan kas, potensi pendapatan, gaji, pajak estimasi, progres stage.
+- **Fisika produk (Phase 4):** rotasi barang di tangan dengan tombol **R**.
 
 ---
 
@@ -96,10 +110,12 @@ beri tahu saja.
 
 ```
 src/main/kotlin/com/ost/game/
-├── core/      EventBus, StateMachine, GameConfig, GameContext
+├── core/      EventBus, StateMachine, GameConfig, GameContext, Settings
 ├── data/      Models (ProductDef, Order, Snapshot, Catalog), GameState
-├── systems/   Inventory, Order, Packing, Courier, DayNight, Save
-├── world/     World (geometry 3D), Player, Interactable
+├── systems/   Inventory, Order, Packing, Courier, DayNight, Save, Audio,
+│              LiveEvent, Upgrade, Employee
+├── world/     World, Player, Interactable, ChibiCharacter, WeatherFX,
+│              WarehouseFX, VisitorNPC
 ├── ui/        UIStyles, HUD, PhoneUI, ComputerUI, MainMenu
 ├── screens/   GameScreen (orkestrasi)
 ├── OSTGame.kt           entry point libGDX
@@ -108,11 +124,34 @@ src/main/kotlin/com/ost/game/
 
 ---
 
-## 5. Roadmap berikutnya (belum dibuat)
+## 5. Status roadmap
 
-Phase 11 (karakter chibi 3D + animasi tangan/ekspresi), picking automation karyawan
-yang benar-benar bekerja, multi-gudang & ekspansi bangunan, grafik quality settings,
-optimasi, dan testing menyeluruh di perangkat.
+Semua phase 1–14 + 17–18 sudah punya implementasi konkret di dalam game:
 
-Fitur baru harus ditambahkan sebagai modul baru dan dihubungkan lewat `EventBus`,
-bukan dengan mengubah `PlayerController`/`GameScreen` secara langsung.
+| Phase | Status |
+|-------|--------|
+| 1 Foundation & Player | ✅ |
+| 2 Interaction & Physics | ✅ |
+| 3 Warehouse & Inventory | ✅ |
+| 4 Supplier & Product | ✅ |
+| 5 Marketplace & Order + animasi gudang | ✅ |
+| 6 Picking & Packing (6 tahap) | ✅ |
+| 7 Courier & Shipping + NPC pengunjung | ✅ |
+| 8 NPC & Employee AI | ✅ (task nyata) |
+| 9 Finance & Business | ✅ |
+| 10 Upgrade & Expansion | ✅ |
+| 11 Character Animation | ✅ (chibi prosedural, bukan FBX rig) |
+| 12 Environment, Audio, FX | ✅ |
+| 13 UI/UX & Polish | ✅ |
+| 14 Optimization & Testing | ✅ kompilasi + CI; testing device oleh pemain |
+| 17 Gameplay Variation | ✅ |
+| 18 Game Settings | ✅ |
+
+**Yang masih bisa dikembangkan lebih lanjut (di luar cakupan vertical slice):**
+- Model 3D eksternal (FBX/GLTF) + Animator Controller rig penuh ( morph target ekspresi )
+  — saat ini karakter dibuat dari primitive 3D dengan animasi transform.
+- Pathfinding NavMesh untuk NPC (sekarang memakai pergerakan langsung ke target).
+- Multi-platform marketplace sungguhan & backend server.
+- Voice acting NPC dan tekstur PBR (sekarang audio prosedural & material warna polos).
+
+Fitur baru tetap ditambahkan sebagai modul dan dihubungkan lewat `EventBus`.

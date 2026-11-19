@@ -19,6 +19,8 @@ class GameState(private val bus: EventBus) {
     var loan: Long = 0
     var stage: Int = 1
     var rewardMultiplier: Float = 1f
+    var storageCapacity: Int = 50
+    var employeeSalary: Long = 0
 
     fun addCash(amount: Long) {
         cash += amount
@@ -41,13 +43,14 @@ class GameState(private val bus: EventBus) {
 
     fun serialize(): GameSnapshot = GameSnapshot(
         cash, reputation, day, timeOfDay,
-        HashMap(inventory), ordersDone, productsSold, loan, stage
+        HashMap(inventory), ordersDone, productsSold, loan, stage, storageCapacity
     )
 
     fun apply(s: GameSnapshot) {
         cash = s.cash; reputation = s.reputation; day = s.day; timeOfDay = s.timeOfDay
         inventory.clear(); inventory.putAll(s.inventory)
         ordersDone = s.ordersDone; productsSold = s.productsSold; loan = s.loan; stage = s.stage
+        storageCapacity = s.storageCapacity.coerceAtLeast(50)
         bus.emit(Ev.CASH_CHANGED, cash)
         bus.emit(Ev.REP_CHANGED, reputation)
     }
@@ -58,5 +61,6 @@ class GameState(private val bus: EventBus) {
         reputation = 0; day = 1; timeOfDay = 0.35f
         inventory.clear(); orders.clear()
         ordersDone = 0; productsSold = 0; loan = 0; stage = 1
+        storageCapacity = 50
     }
 }
