@@ -10,8 +10,12 @@ Ditulis dalam **Kotlin** memakai **libGDX 1.13.1** sebagai renderer 3D.
 
 ## 1. Cara mendapat APK (tanpa PC / tanpa Android Studio)
 
-Proyek ini sudah punya GitHub Actions workflow (`.github/workflows/build-apk.yml`)
-yang akan meng-compile APK di cloud secara gratis.
+**Sudah jadi:** repository `https://github.com/Mikdad-Force/Online-Shop-Tycoon`
+dan workflow build-nya sudah sukses. APK debug juga sudah disalin ke HP di:
+`/storage/emulated/0/Download/Online-Shop-Tycoon.apk`
+
+Proyek ini punya GitHub Actions workflow (`.github/workflows/build-apk.yml`)
+yang meng-compile APK di cloud secara gratis setiap kali ada push ke `main`.
 
 1. Buat akun / login GitHub di browser HP (https://github.com).
 2. Buat repository baru (misalnya `online-shop-tycoon`), pilih **Public**.
