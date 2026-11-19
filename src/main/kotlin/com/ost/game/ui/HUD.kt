@@ -28,6 +28,7 @@ class HUD(
     private val stageLabel = Label("", skin, "default")
     private val orderLabel = Label("", skin, "default").apply { setAlignment(Align.topLeft) }
     private val promptLabel = Label("", skin, "default").apply { setAlignment(Align.center) }
+    private val eventLabel = Label("", skin, "default").apply { setAlignment(Align.center); setFontScale(1.15f) }
     private val toastLabel = Label("", skin, "default").apply { setAlignment(Align.center); wrap = true }
     val touchpad = Touchpad(12f, skin)
 
@@ -60,6 +61,7 @@ class HUD(
         bottom.add(actionBtn).pad(12f)
 
         val center = Table()
+        center.add(eventLabel).expandX().center().bottom().padBottom(168f).row()
         center.add(promptLabel).expandX().center().bottom().padBottom(120f)
 
         stage.addActor(Table().apply {
@@ -82,6 +84,11 @@ class HUD(
         bus.on(Ev.REP_CHANGED) { repLabel.setText("Reputasi: $it/100") }
         bus.on(Ev.DAY_CHANGED) { /* warna di-update lewat clock */ }
         bus.on(Ev.NOTIFICATION) { toast(it as String) }
+        bus.on(Ev.LIVE_EVENT) { e ->
+            val info = e as com.ost.game.systems.LiveEventInfo
+            eventLabel.setText(if (info.name.isEmpty()) "" else "${info.name}  •  ${info.remaining.toInt()}d")
+            eventLabel.color = if (info.name.isEmpty()) Color.WHITE else Color(1f, .85f, .35f, 1f)
+        }
 
         cashLabel.setText("Rp ${String.format("%,d", GameContext.state.cash)}")
         repLabel.setText("Reputasi: ${GameContext.state.reputation}/100")

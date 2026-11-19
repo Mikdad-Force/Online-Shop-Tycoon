@@ -80,6 +80,15 @@ beri tahu saja.
 - **UI fungsional:** HUD, smartphone (marketplace/supplier/bank/chat), komputer
   (order/inventory/finance/staff/marketing), main menu.
 - **Save system:** autosave 60 detik, manual save, slot, backup, versioning.
+- **Audio & haptic (Phase 12):** 12 efek suara + BGM 7 detik loop (dibuat prosedural lewat
+  `tools/gen_audio.py`), SFX terikat ke EventBus, getar saat interaksi/packing/order selesai,
+  suara langkah saat berjalan.
+- **Cuaca & FX (Phase 12):** hujan 3D mengikuti siklus hari (tiap 5 hari), partikel garis jatuh.
+- **Variasi gameplay (Phase 17):** flash sale (hadiah 2x), pesanan darurat (deadline 75 detik,
+  3x hadiah), komplain pelanggan, maintenance gudang, bulk deal supplier — muncul acak
+  dengan banner di HUD.
+- **Settings (Phase 18):** tab SETTING di HP — music ON/OFF, volume music & SFX, haptic,
+  sensitivitas kamera; tersimpan di `settings.txt`.
 
 ---
 
@@ -101,9 +110,9 @@ src/main/kotlin/com/ost/game/
 
 ## 5. Roadmap berikutnya (belum dibuat)
 
-Phase 3–14 dari spec Anda: multi-gudang, picking automation karyawan, animasi
-tangan/ekspresi, model karakter chibi ber-Animator, audio & SFX, haptic, cuaca
-lanjut, ekspansi bangunan, optimasi, dan testing di perangkat.
+Phase 11 (karakter chibi 3D + animasi tangan/ekspresi), picking automation karyawan
+yang benar-benar bekerja, multi-gudang & ekspansi bangunan, grafik quality settings,
+optimasi, dan testing menyeluruh di perangkat.
 
 Fitur baru harus ditambahkan sebagai modul baru dan dihubungkan lewat `EventBus`,
 bukan dengan mengubah `PlayerController`/`GameScreen` secara langsung.

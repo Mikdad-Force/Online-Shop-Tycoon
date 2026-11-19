@@ -23,6 +23,10 @@ object GameContext {
         private set
     lateinit var save: SaveSystem
         private set
+    lateinit var audio: AudioSystem
+        private set
+    lateinit var events: LiveEventSystem
+        private set
     lateinit var world: World
         private set
     lateinit var player: Player
@@ -36,6 +40,7 @@ object GameContext {
         this.world = world
         this.player = player
         bus = EventBus()
+        Settings.load()
         state = GameState(bus)
         inventory = InventorySystem(state, bus)
         orders = OrderSystem(state, bus)
@@ -43,6 +48,8 @@ object GameContext {
         courier = CourierSystem(bus)
         time = DayNightSystem(state, bus)
         save = SaveSystem(state, orders, bus)
+        audio = AudioSystem(bus)
+        events = LiveEventSystem(state, orders, bus)
         initialized = true
     }
 }

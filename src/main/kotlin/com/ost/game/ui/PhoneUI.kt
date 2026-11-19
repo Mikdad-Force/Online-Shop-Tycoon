@@ -22,9 +22,9 @@ class PhoneUI(private val skin: Skin) {
         window.isMovable = true
         window.isModal = false
         val tabs = Table()
-        listOf("MARKETPLACE", "SUPPLIER", "BANK", "CHAT").forEach { t ->
+        listOf("MARKETPLACE", "SUPPLIER", "BANK", "CHAT", "SETTING").forEach { t ->
             tabs.add(object : TextButton(t, skin) {
-                override fun getPrefWidth(): Float = 118f
+                override fun getPrefWidth(): Float = 100f
             }.apply {
                 addListener(object : ClickListener() {
                     override fun clicked(event: InputEvent?, x: Float, y: Float) {
@@ -93,8 +93,48 @@ class PhoneUI(private val skin: Skin) {
                 content.add(Label("Anda: Ready kak, langsung dikirim hari ini 😊", skin)).left().padLeft(30f).row()
                 content.add(Label("Supplier: Promo bulk hari ini, beli 10 gratis 1!", skin)).left().pad(8f).row()
             }
+            "SETTING" -> {
+                val st = com.ost.game.core.Settings
+                content.add(Label("MUSIK: ${if (st.musicOn) "ON" else "OFF"}", skin)).pad(6f).row()
+                content.add(toggleBtn("MUSIK") { st.musicOn = !st.musicOn }).pad(4f).row()
+                content.add(Label("MUSIK: ${(st.musicVolume * 100).toInt()}%  |  SFX: ${(st.sfxVolume * 100).toInt()}%", skin)).pad(6f).row()
+                content.add(adjustBtn("MUSIK -") { st.musicVolume = (st.musicVolume - .1f).coerceIn(0f, 1f) }).pad(2f)
+                content.add(adjustBtn("MUSIK +") { st.musicVolume = (st.musicVolume + .1f).coerceIn(0f, 1f) }).pad(2f).row()
+                content.add(adjustBtn("SFX -") { st.sfxVolume = (st.sfxVolume - .1f).coerceIn(0f, 1f) }).pad(2f)
+                content.add(adjustBtn("SFX +") { st.sfxVolume = (st.sfxVolume + .1f).coerceIn(0f, 1f) }).pad(2f).row()
+                content.add(Label("HAPTIC: ${if (st.haptics) "ON" else "OFF"}  |  SENSITIVITAS: ${String.format("%.1f", st.sensitivity)}", skin)).pad(6f).row()
+                content.add(toggleBtn("HAPTIC") { st.haptics = !st.haptics }).pad(2f)
+                content.add(adjustBtn("SENS -") { st.sensitivity = (st.sensitivity - .1f).coerceIn(.3f, 2.5f) }).pad(2f)
+                content.add(adjustBtn("SENS +") { st.sensitivity = (st.sensitivity + .1f).coerceIn(.3f, 2.5f) }).pad(2f).row()
+                content.add(object : TextButton("SIMPAN PENGATURAN", skin) {
+                    override fun getPrefWidth(): Float = 320f
+                }.apply { addListener(object : ClickListener() {
+                    override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                        st.save()
+                        GameContext.bus.emit(com.ost.game.core.Ev.SETTINGS_CHANGED)
+                        st.vibrate(40)
+                        GameContext.bus.emit(com.ost.game.core.Ev.NOTIFICATION, "Pengaturan tersimpan")
+                    }
+                }) }).pad(10f).row()
+            }
         }
     }
+
+    private fun toggleBtn(text: String, action: () -> Unit): TextButton =
+        object : TextButton(text, skin) {
+            override fun getPrefWidth(): Float = 150f
+            override fun getPrefHeight(): Float = 44f
+        }.apply { addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) { action(); refresh() }
+        }) }
+
+    private fun adjustBtn(text: String, action: () -> Unit): TextButton =
+        object : TextButton(text, skin) {
+            override fun getPrefWidth(): Float = 105f
+            override fun getPrefHeight(): Float = 44f
+        }.apply { addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) { action(); refresh() }
+        }) }
 
     private fun buyBtn(id: String, qty: Int, text: String): TextButton {
         return object : TextButton(text, skin) {

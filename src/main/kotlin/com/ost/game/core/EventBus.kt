@@ -30,4 +30,6 @@ object Ev {
     const val COURIER = "courier.event"
     const val SAVED = "save.done"
     const val LOADED = "save.loaded"
+    const val LIVE_EVENT = "event.live"
+    const val SETTINGS_CHANGED = "settings.changed"
 }

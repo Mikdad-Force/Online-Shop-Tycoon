@@ -30,11 +30,22 @@ class OrderSystem(private val state: GameState, private val bus: EventBus) {
         val pool = Catalog.products.filter { state.stage >= 1 || it.id == "kopi" }
         val p = pool.random()
         val qty = if (state.stage >= 4 && Random.nextBoolean()) 2 else 1
-        val reward = (p.sellPrice * qty * (1f + state.reputation / 400f)).toLong()
+        val reward = (p.sellPrice * qty * (1f + state.reputation / 400f) * state.rewardMultiplier).toLong()
         val order = Order(state.nextOrderId(), p.id, qty, reward, GameConfig.ORDER_LIFETIME)
         state.orders.add(order)
         bus.emit(Ev.ORDER_ADDED, order)
         bus.emit(Ev.NOTIFICATION, "Pesanan baru #${order.id}: ${qty}x ${p.name}")
+    }
+
+    /** Pesanan darurat: deadline pendek, hadiah 3x. Dipicu live event. */
+    fun spawnEmergency() {
+        if (state.orders.size >= 8) return
+        val p = Catalog.products.random()
+        val reward = (p.sellPrice * 3f).toLong()
+        val order = Order(state.nextOrderId(), p.id, 1, reward, 75f)
+        state.orders.add(order)
+        bus.emit(Ev.ORDER_ADDED, order)
+        bus.emit(Ev.NOTIFICATION, "PESANAN DARURAT #${order.id}: ${p.name}, 75 detik, Rp $reward!")
     }
 
     fun pendingFor(productId: String): Order? =

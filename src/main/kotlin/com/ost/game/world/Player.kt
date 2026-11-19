@@ -3,6 +3,7 @@ package com.ost.game.world
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.math.Vector3
 import com.ost.game.core.GameConfig
+import com.ost.game.core.Settings
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -27,8 +28,9 @@ class Player(val camera: PerspectiveCamera) {
         lookDx: Float, lookDy: Float,
         jump: Boolean, wantCrouch: Boolean, wantSprint: Boolean
     ) {
-        yaw += lookDx * 0.0045f
-        pitch = (pitch - lookDy * 0.0045f).coerceIn(-1.3f, 1.3f)
+        val sens = 0.0045f * Settings.sensitivity
+        yaw += lookDx * sens
+        pitch = (pitch - lookDy * sens).coerceIn(-1.3f, 1.3f)
 
         crouching = wantCrouch
         sprinting = wantSprint && !crouching && (moveX != 0f || moveY != 0f)

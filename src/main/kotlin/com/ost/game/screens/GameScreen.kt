@@ -21,6 +21,7 @@ import com.ost.game.ui.HUD
 import com.ost.game.ui.MainMenu
 import com.ost.game.ui.PhoneUI
 import com.ost.game.ui.UIStyles
+import com.ost.game.core.Settings
 import com.ost.game.world.Interactable
 import com.ost.game.world.Player
 import com.ost.game.world.World
@@ -34,7 +35,10 @@ class GameScreen : ScreenAdapter() {
     }
     private val batch = ModelBatch()
     private val world = World()
+    private val weather = com.ost.game.world.WeatherFX()
     private val player = Player(camera)
+    private var stepTimer = 0f
+    private var moving = false
 
     private val skin: Skin = UIStyles.createSkin()
     private val stage = Stage(ScreenViewport())
@@ -57,6 +61,8 @@ class GameScreen : ScreenAdapter() {
     init {
         world.build()
         GameContext.init(world, player)
+        GameContext.audio.load()
+        GameContext.audio.startMusic()
         wireInteractables()
 
         hud = HUD(stage, skin, ::performInteract, { phone.toggle() }, { computer.toggle() }, {
@@ -112,6 +118,8 @@ class GameScreen : ScreenAdapter() {
                 else {
                     inv.take(id)
                     world.setHeld(id)
+                    GameContext.audio.play("box")
+                    Settings.vibrate(25)
                     bus.emit(Ev.NOTIFICATION, "Mengambil ${Catalog.find(id)?.name}")
                 }
             }
@@ -203,6 +211,7 @@ class GameScreen : ScreenAdapter() {
 
     private fun performInteract() {
         val target = currentTarget
+        Settings.vibrate(20)
         if (target != null) target.action()
         else GameContext.bus.emit(Ev.NOTIFICATION, "Arahkan kamera ke objek lalu tekan INTERAKSI")
     }
@@ -217,6 +226,7 @@ class GameScreen : ScreenAdapter() {
         if (Gdx.input.isKeyPressed(Input.Keys.W)) kbY += 1f
         if (Gdx.input.isKeyPressed(Input.Keys.S)) kbY -= 1f
 
+        moving = (mx != 0f || my != 0f || kbX != 0f || kbY != 0f)
         val jump = jumpQueued || Gdx.input.isKeyPressed(Input.Keys.SPACE)
         jumpQueued = false
         player.update(
@@ -244,12 +254,21 @@ class GameScreen : ScreenAdapter() {
         if (running) {
             updateInput(dt)
             GameContext.time.update(dt)
+            GameContext.events.update(dt)
             GameContext.orders.update(dt)
             GameContext.courier.update(dt)
             GameContext.save.update(dt)
             interact()
             world.update(dt, camera, player)
             world.updateLighting(GameContext.time.sunX, GameContext.time.sunY)
+            weather.update(dt, camera, GameContext.time.rain)
+            if (moving) {
+                stepTimer -= dt
+                if (stepTimer <= 0f) {
+                    GameContext.audio.play("step", if (player.sprinting) .8f else .5f)
+                    stepTimer = if (player.sprinting) .26f else .4f
+                }
+            }
         } else {
             camera.update()
             world.update(0f, camera, player)
@@ -258,6 +277,7 @@ class GameScreen : ScreenAdapter() {
         batch.begin(camera)
         world.render(batch)
         batch.end()
+        weather.render(camera, GameContext.time.rain)
 
         hud.update(dt)
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST)
@@ -276,6 +296,9 @@ class GameScreen : ScreenAdapter() {
     }
 
     override fun dispose() {
+        Settings.save()
+        GameContext.audio.dispose()
+        weather.dispose()
         batch.dispose()
         world.dispose()
         stage.dispose()

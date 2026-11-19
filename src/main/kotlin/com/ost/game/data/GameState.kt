@@ -18,6 +18,7 @@ class GameState(private val bus: EventBus) {
     var productsSold: Int = 0
     var loan: Long = 0
     var stage: Int = 1
+    var rewardMultiplier: Float = 1f
 
     fun addCash(amount: Long) {
         cash += amount
@@ -52,6 +53,7 @@ class GameState(private val bus: EventBus) {
     }
 
     fun reset() {
+        rewardMultiplier = 1f
         cash = GameConfig.START_CASH
         reputation = 0; day = 1; timeOfDay = 0.35f
         inventory.clear(); orders.clear()
