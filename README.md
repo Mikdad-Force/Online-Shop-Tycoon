@@ -14,6 +14,12 @@ Ditulis dalam **Kotlin** memakai **libGDX 1.13.1** sebagai renderer 3D.
 dan workflow build-nya sudah sukses. APK debug juga sudah disalin ke HP di:
 `/storage/emulated/0/Download/Online-Shop-Tycoon.apk`
 
+> Catatan: build sebelumnya force close karena `libgdx.so` tidak ikut terpaket.
+> Sekarang native library sudah disertakan untuk armeabi-v7a/arm64-v8a/x86/x86_64
+> lewat `src/main/jniLibs/`. **Uninstall versi lama dulu** sebelum install yang baru.
+
+> (ABI: `armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64`.)
+
 Proyek ini punya GitHub Actions workflow (`.github/workflows/build-apk.yml`)
 yang meng-compile APK di cloud secara gratis setiap kali ada push ke `main`.
 
