@@ -18,11 +18,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Siapkan Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Instal platform & build-tools
-        run: sdkmanager "platforms;android-34" "build-tools;34.0.0" platform-tools
+      - name: Siapkan paket Android SDK
+        run: |
+          SDKMGR=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          echo "sdkmanager: $SDKMGR"
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          "$SDKMGR" "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
       - name: Siapkan Gradle
         uses: gradle/actions/setup-gradle@v4
