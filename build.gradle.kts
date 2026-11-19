@@ -35,8 +35,6 @@ dependencies {
     val gdxVersion = "1.13.1"
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")
     implementation("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
-    implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a")
-    implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")
-    implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86")
-    implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64")
+    // Native libgdx.so disimpan langsung di src/main/jniLibs/<abi>/
+    // (AGP tidak mengekstrak .so dari dependency .jar secara otomatis)
 }
