@@ -146,10 +146,10 @@ class ChibiCharacter(
         cap?.let { place(it, 0f, 1.58f + bob, .02f) }
     }
 
-    fun render(batch: ModelBatch) {
+    fun render(batch: ModelBatch, env: com.badlogic.gdx.graphics.g3d.Environment) {
         if (!visible) return
         listOf(shadow, legL, legR, body, armL, armR, head, hairMesh, eyeL, eyeR, cap)
-            .filterNotNull().forEach { batch.render(it) }
+            .filterNotNull().forEach { batch.render(it, env) }
     }
 
     fun dispose() {

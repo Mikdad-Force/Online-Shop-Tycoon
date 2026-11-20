@@ -53,9 +53,11 @@ class GameScreen : ScreenAdapter() {
     private lateinit var phone: PhoneUI
     private lateinit var computer: ComputerUI
     private lateinit var menu: MainMenu
+    private val errorOverlay = com.ost.game.ui.ErrorOverlay(skin)
 
     private var lookDx = 0f
     private var lookDy = 0f
+    private var lookPointer = -1
     private var jumpQueued = false
     private var menuVisible = true
     private var running = false
@@ -88,17 +90,28 @@ class GameScreen : ScreenAdapter() {
         stage.addActor(phone.window)
         stage.addActor(computer.window)
         stage.addActor(menu.root)
+        stage.addActor(errorOverlay.root)
         phone.window.setPosition((stage.width - phone.window.width) / 2, 120f)
         computer.window.setPosition((stage.width - computer.window.width) / 2, 90f)
 
         val input = InputMultiplexer()
         input.addProcessor(stage)
         input.addProcessor(object : InputAdapter() {
+            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+                // Jari di separuh kiri = joystick; separuh kanan = putar kamera.
+                if (screenX > Gdx.graphics.width * 0.35f) lookPointer = pointer
+                return false
+            }
             override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
-                if (!menuVisible) {
-                    lookDx += Gdx.input.deltaX.toFloat()
-                    lookDy += Gdx.input.deltaY.toFloat()
+                // Pakai delta per-pointer, bukan deltaX() global yang mengikuti jari joystick.
+                if (!menuVisible && pointer == lookPointer) {
+                    lookDx += Gdx.input.getDeltaX(pointer).toFloat()
+                    lookDy += Gdx.input.getDeltaY(pointer).toFloat()
                 }
+                return false
+            }
+            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+                if (pointer == lookPointer) lookPointer = -1
                 return false
             }
             override fun keyDown(key: Int): Boolean {
@@ -196,6 +209,17 @@ class GameScreen : ScreenAdapter() {
         GameContext.state.inventory["buku"] = 8
         GameContext.state.inventory["teh"] = 6
         world.setHeld(null)
+        player.position.set(0f, GameConfig.EYE_HEIGHT, 8f)
+        player.yaw = 0f
+        player.pitch = 0f
+        player.thirdPerson = false
+        avatar.visible = false
+        camera.position.set(player.position)
+        camera.lookAt(0f, GameConfig.EYE_HEIGHT, 0f)
+        camera.update()
+        lookDx = 0f
+        lookDy = 0f
+        currentTarget = null
         menu.root.isVisible = false
         menuVisible = false
         running = true
@@ -281,6 +305,14 @@ class GameScreen : ScreenAdapter() {
     }
 
     override fun render(delta: Float) {
+        try {
+            renderInner(delta)
+        } catch (e: Throwable) {
+            errorOverlay.show(e)
+        }
+    }
+
+    private fun renderInner(delta: Float) {
         val dt = minOf(delta, 0.05f)
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
         Gdx.gl.glClearColor(GameContext.time.sky.r, GameContext.time.sky.g, GameContext.time.sky.b, 1f)
@@ -318,11 +350,12 @@ class GameScreen : ScreenAdapter() {
         }
 
         batch.begin(camera)
-        world.render(batch)
-        warehouseFX.render(batch)
-        GameContext.employees.render(batch)
-        visitor.render(batch)
-        if (player.thirdPerson) avatar.render(batch)
+        val env = world.environment
+        world.render(batch, env)
+        warehouseFX.render(batch, env)
+        GameContext.employees.render(batch, env)
+        visitor.render(batch, env)
+        if (player.thirdPerson) avatar.render(batch, env)
         batch.end()
         weather.render(camera, GameContext.time.rain)
 

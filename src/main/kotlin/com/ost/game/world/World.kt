@@ -233,14 +233,14 @@ class World {
 
     private fun bob(t: Float): Float = kotlin.math.sin(t * 6f) * .04f
 
-    fun render(batch: ModelBatch) {
-        batch.render(statics)
-        if (GameContext.isReady() && GameContext.upgrades.has("warehouse2")) batch.render(expansion)
-        shelfDisplays.forEach { (id, inst) -> if (id !in hiddenProducts) batch.render(inst) }
-        held?.let { batch.render(it) }
-        if (GameContext.courier.vanActive) batch.render(van)
-        if (GameContext.courier.courierActive) batch.render(courier)
-        batch.render(staff)
+    fun render(batch: ModelBatch, env: com.badlogic.gdx.graphics.g3d.Environment) {
+        batch.render(statics, env)
+        if (GameContext.isReady() && GameContext.upgrades.has("warehouse2")) batch.render(expansion, env)
+        shelfDisplays.forEach { (id, inst) -> if (id !in hiddenProducts) batch.render(inst, env) }
+        held?.let { batch.render(it, env) }
+        if (GameContext.courier.vanActive) batch.render(van, env)
+        if (GameContext.courier.courierActive) batch.render(courier, env)
+        batch.render(staff, env)
     }
 
     fun updateLighting(sunX: Float, sunY: Float) {

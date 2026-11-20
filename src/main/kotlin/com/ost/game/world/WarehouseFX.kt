@@ -61,12 +61,12 @@ class WarehouseFX {
 
     private val tmp = com.badlogic.gdx.math.Vector3()
 
-    fun render(batch: ModelBatch) {
-        batch.render(belt)
-        boxes.forEach { batch.render(it) }
+    fun render(batch: ModelBatch, env: com.badlogic.gdx.graphics.g3d.Environment) {
+        batch.render(belt, env)
+        boxes.forEach { batch.render(it, env) }
         if (forkliftEnabled || GameContext.isReady() && GameContext.upgrades.has("forklift")) {
-            batch.render(forklift)
-            batch.render(pallet)
+            batch.render(forklift, env)
+            batch.render(pallet, env)
         }
     }
 

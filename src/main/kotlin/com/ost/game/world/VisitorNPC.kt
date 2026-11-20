@@ -51,6 +51,8 @@ class VisitorNPC {
         return false
     }
 
-    fun render(batch: ModelBatch) { if (active) ch.render(batch) }
+    fun render(batch: ModelBatch, env: com.badlogic.gdx.graphics.g3d.Environment) {
+        if (active) ch.render(batch, env)
+    }
     fun dispose() = ch.dispose()
 }

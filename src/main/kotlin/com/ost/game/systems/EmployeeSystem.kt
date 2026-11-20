@@ -70,8 +70,8 @@ class EmployeeSystem(
         state.employeeSalary = employees.sumOf { 40_000L }
     }
 
-    fun render(batch: com.badlogic.gdx.graphics.g3d.ModelBatch) {
-        employees.forEach { it.character.render(batch) }
+    fun render(batch: com.badlogic.gdx.graphics.g3d.ModelBatch, env: com.badlogic.gdx.graphics.g3d.Environment) {
+        employees.forEach { it.character.render(batch, env) }
     }
 
     fun update(dt: Float) {
