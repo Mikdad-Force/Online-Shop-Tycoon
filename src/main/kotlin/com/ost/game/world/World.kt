@@ -27,10 +27,12 @@ class World {
     private var heldYaw = 0f
 
     val environment = Environment().apply {
-        set(ColorAttribute.createAmbientLight(0.55f, 0.55f, 0.58f, 1f))
-        add(PointLight().set(1f, .92f, .78f, 0f, 6f, -2f, 14f))
+        // Pencahayaan lembut & merata (referensi: supermarket simulator / two point hospital)
+        set(ColorAttribute.createAmbientLight(0.42f, 0.44f, 0.48f, 1f))
+        add(PointLight().set(1f, .92f, .78f, 0f, 6f, -2f, 2.5f))
+        add(PointLight().set(1f, .95f, .85f, 6f, 5f, -5f, 1.8f))
     }
-    val sun = DirectionalLight().set(1f, .96f, .86f, .4f, 1f, .3f)
+    val sun = DirectionalLight().set(.85f, .82f, .75f, .4f, 1f, .3f)
 
     val interactables = mutableListOf<Interactable>()
 
@@ -59,6 +61,13 @@ class World {
         addBox(40f, 7f, .3f, 0xDDE7EE, 0f, 3.5f, 12f)
         addBox(9f, .04f, 9f, 0xD6E8DA, 0f, .01f, 2f)
         addBox(5f, .04f, 2.5f, 0xF6E2B8, 0f, .02f, 5f)
+
+        // Bayangan kontak (fake AO) supaya objek tidak melayang
+        shadow(3.8f, 2.4f, 0f, 0f)
+        shadow(3f, 1.7f, -7f, -3f)
+        shadow(3.2f, 1.8f, 6f, -3f)
+        shadow(3.2f, 1.8f, 6f, -6.5f)
+        shadow(3.2f, 1.8f, 6f, 2f)
 
         // Meja packing
         addBox(3.2f, .15f, 1.8f, wood, 0f, .95f, 0f)
@@ -157,6 +166,12 @@ class World {
         return inst
     }
 
+    private fun shadow(w: Float, d: Float, x: Float, z: Float) {
+        val i = ModelInstance(makeModel(w, .02f, d, 0x4A504E))
+        i.transform.setToTranslation(x, .028f, z)
+        statics.add(i)
+    }
+
     private fun makeModel(w: Float, h: Float, d: Float, color: Int): Model {
         val model = mb.createBox(w, h, d, Material(ColorAttribute.createDiffuse(col(color))),
             ATTRS)
@@ -229,7 +244,7 @@ class World {
     }
 
     fun updateLighting(sunX: Float, sunY: Float) {
-        sun.set(1f, .96f, .86f, sunX * .6f, sunY.coerceAtLeast(.15f), sunX * .3f)
+        sun.set(.85f, .82f, .75f, sunX * .6f, sunY.coerceAtLeast(.15f), sunX * .3f)
     }
 
     fun tablePosition(): Vector3 = tablePos

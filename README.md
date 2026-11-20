@@ -106,6 +106,29 @@ beri tahu saja.
 
 ---
 
+## 3b. Referensi seni / visual
+
+Target tampilan: **3D cartoon low-poly, cerah, hangat, rapi** — bukan realistik berlebih,
+bukan neon. Prinsip yang dipakai:
+
+- **Supermarket Simulator** (Nokta Games): rak berisi produk berwarna-warni, kardus,
+  pencahayaan toko yang merata, UI diegetik (komputer/tablet di dunia game).
+  Referensi: https://www.styledex.games/game/supermarket-simulator
+  dan https://teemo.dev/game-design/supermarket-simulator/systems/development-and-presentation/
+- **Cartoon Low Poly Supermarket City Scene** ( Sketchfab, antonmoek ):
+  https://sketchfab.com/3d-models/cartoon-low-poly-supermarket-city-scene-63b3382ab7df4493a0738c50ad85556c
+- **Two Point Hospital / House Flipper**: warna cerah high-key, bentuk sederhana,
+  bayangan lembut, proporsi agak chibi.
+- **Panduan warna dinding & lantai Supermarket Simulator** ( Steam ):
+  https://steamcommunity.com/sharedfiles/filedetails/?id=3344387661
+
+Implementasi di game: material warna solid, ambient + directional light yang **tidak**
+di-setel terang-terang (menghindari wash-out putih), bayangan kontak palsu di bawah
+objek/karakter, langit dinamis siang-malam, dan UI dengan panel solid (bukan transparan).
+Aset dibuat prosedural dari primitive 3D agar tetap ringan di HP.
+
+---
+
 ## 4. Peta kode
 
 ```

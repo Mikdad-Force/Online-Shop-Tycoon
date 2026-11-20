@@ -33,6 +33,7 @@ class ChibiCharacter(
     private val eyeL: ModelInstance
     private val eyeR: ModelInstance
     private val cap: ModelInstance?
+    private val shadow: ModelInstance
 
     var position = Vector3()
     var facing = 0f // derajat
@@ -51,6 +52,7 @@ class ChibiCharacter(
         eyeL = box(.07f, .09f, .03f, 0x263238)
         eyeR = box(.07f, .09f, .03f, 0x263238)
         cap = if (uniform) ball(.39f, 0x1F6E6E, 10, 6) else null
+        shadow = box(.95f, .02f, .75f, 0x4A504E)
     }
 
     private fun col(hex: Int): Color = Color(
@@ -135,6 +137,7 @@ class ChibiCharacter(
                 place(armR, .42f, .96f + bob, 0f, rz = 4f)
             }
         }
+        shadow.transform.setToTranslation(position.x, .025f, position.z)
         place(body, 0f, .74f + bob, 0f, rz = if (anim == "TIRED") 9f else 0f)
         place(head, 0f, 1.34f + bob, 0f, ry = sin(t * 1.5f) * 4f)
         place(hairMesh, 0f, 1.50f + bob, .02f, ry = sin(t * 1.5f) * 4f)
@@ -145,7 +148,7 @@ class ChibiCharacter(
 
     fun render(batch: ModelBatch) {
         if (!visible) return
-        listOf(legL, legR, body, armL, armR, head, hairMesh, eyeL, eyeR, cap)
+        listOf(shadow, legL, legR, body, armL, armR, head, hairMesh, eyeL, eyeR, cap)
             .filterNotNull().forEach { batch.render(it) }
     }
 

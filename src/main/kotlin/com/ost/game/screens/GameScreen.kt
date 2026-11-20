@@ -11,7 +11,8 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.utils.viewport.ScreenViewport
+import com.badlogic.gdx.utils.viewport.ScalingViewport
+import com.badlogic.gdx.utils.Scaling
 import com.ost.game.core.Ev
 import com.ost.game.core.GameConfig
 import com.ost.game.core.GameContext
@@ -46,7 +47,8 @@ class GameScreen : ScreenAdapter() {
     private var celebrateTimer = 0f
 
     private val skin: Skin = UIStyles.createSkin()
-    private val stage = Stage(ScreenViewport())
+    // Viewport virtual 1280x720: UI tetap proporsional di HP resolusi berapa pun.
+    private val stage = Stage(ScalingViewport(Scaling.fit, 1280f, 720f))
     private lateinit var hud: HUD
     private lateinit var phone: PhoneUI
     private lateinit var computer: ComputerUI

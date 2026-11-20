@@ -16,9 +16,22 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 object UIStyles {
     val textures = mutableListOf<Texture>()
 
-    fun colorDrawable(color: Int): TextureRegionDrawable {
+    /**
+     * Hex 6 digit = RRGGBB (alpha penuh).
+     * Hex 8 digit = AARRGGBB (alpha di byte tertinggi).
+     * Color(int) libGDX membaca byte terendah sebagai alpha — makanya dikonversi manual.
+     */
+    fun colorDrawable(argb: Int): TextureRegionDrawable {
+        val a = when {
+            argb == 0 -> 0f
+            ((argb ushr 24) and 0xFF) != 0 -> ((argb ushr 24) and 0xFF) / 255f
+            else -> 1f
+        }
+        val r = ((argb shr 16) and 0xFF) / 255f
+        val g = ((argb shr 8) and 0xFF) / 255f
+        val b = (argb and 0xFF) / 255f
         val pm = Pixmap(1, 1, Pixmap.Format.RGBA8888)
-        pm.setColor(Color(color))
+        pm.setColor(r, g, b, a)
         pm.fill()
         val tex = Texture(pm)
         pm.dispose()
